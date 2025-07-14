@@ -35,13 +35,6 @@ func createTables(db *sql.DB) error {
 			city TEXT,
 			school_format TEXT
 		);
-		
-		CREATE TABLE IF NOT EXISTS appeals (
-			id SERIAL PRIMARY KEY,
-			question TEXT NOT NULL,
-			initiator TEXT NOT NULL,
-			is_answered BOOLEAN NOT NULL
-		);
 	`)
 
 	return err
@@ -93,45 +86,6 @@ func (d *Database) FindBannedUser(phoneNumber string) (*models.BannedUser, error
 	return &user, nil
 }
 
-func (d *Database) AddAppeal(appeal models.Appeal) error {
-	_, err := d.db.Exec(
-		"INSERT INTO appeals (question, initiator, is_answered) VALUES ($1, $2, $3)",
-		appeal.Question, appeal.Initiator, appeal.IsAnswered,
-	)
-
-	return err
-}
-
 func (d *Database) Close() error {
 	return d.db.Close()
-}
-
-func (d *Database) GetUnansweredAppeals() ([]models.Appeal, error) {
-	rows, err := d.db.Query(
-		"SELECT id, question, initiator FROM appeals WHERE is_answered = FALSE",
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var appeals []models.Appeal
-	for rows.Next() {
-		var a models.Appeal
-		if err := rows.Scan(&a.ID, &a.Question, &a.Initiator); err != nil {
-			return nil, err
-		}
-		appeals = append(appeals, a)
-	}
-
-	return appeals, nil
-}
-
-func (d *Database) MarkAppealAsAnswered(id int) error {
-	_, err := d.db.Exec(
-		"UPDATE appeals SET is_answered = TRUE WHERE id = $1",
-		id,
-	)
-
-	return err
 }

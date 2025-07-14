@@ -55,8 +55,6 @@ func (h *BotHandler) SetupHandlers() {
 			return h.findUserHandler(c)
 		case "add_appeal":
 			return h.addAppealHandler(c)
-		case "list_appeals":
-			return h.listAppealsHandler(c)
 		case "main_menu":
 			return h.showMainMenu(c)
 		}
@@ -71,11 +69,10 @@ func (h *BotHandler) showMainMenu(c telebot.Context) error {
 	btnAddUser := markup.Data("➕ Добавить пользователя", "add_user_phone_number")
 	btnFindUser := markup.Data("🔍 Найти пользователя", "find_user")
 	btnAddAppeal := markup.Data("📝 Оставить обращение", "add_appeal")
-	btnListAppeals := markup.Data("📋 Список обращений", "list_appeals")
 
 	markup.Inline(
 		markup.Row(btnAddUser, btnFindUser),
-		markup.Row(btnAddAppeal, btnListAppeals),
+		markup.Row(btnAddAppeal),
 	)
 
 	h.bot.Handle(telebot.OnText, func(ctx telebot.Context) error {
