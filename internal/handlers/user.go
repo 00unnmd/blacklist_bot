@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"blacklist_bot/utils/validation"
 	"fmt"
 	"gopkg.in/telebot.v3"
 )
@@ -17,11 +18,13 @@ func (h *BotHandler) addUserPhoneNumber(c telebot.Context) error {
 	}
 
 	h.bot.Handle(telebot.OnText, func(ctx telebot.Context) error {
-		// validate phone number
-		if len(ctx.Text()) < 1 {
-			ctx.Send("❌ Ошибка: Номер телефона слишком короткий.")
+		normalizedPhone, err := validation.ValidateAndNormalizePhone(ctx.Text())
+		if err != nil {
+			errMsg := fmt.Sprintf("❌ Ошибка: %s\nВведите номер еще раз.", err)
+			return ctx.Send(errMsg)
 		}
-		h.bannedUser.PhoneNumber = ctx.Text()
+
+		h.bannedUser.PhoneNumber = normalizedPhone
 		return h.addUserFullName(c)
 	})
 
@@ -31,7 +34,7 @@ func (h *BotHandler) addUserPhoneNumber(c telebot.Context) error {
 func (h *BotHandler) addUserFullName(c telebot.Context) error {
 	markup := &telebot.ReplyMarkup{}
 	btnCancel := markup.Data("Ⓜ️ В главное меню", "main_menu")
-	btnPrev := markup.Data("Назад", "add_user_phone_number")
+	btnPrev := markup.Data("⬅️ Назад", "add_user_phone_number")
 	markup.Inline(markup.Row(btnCancel, btnPrev))
 	h.bannedUser.FullName = ""
 
@@ -41,10 +44,12 @@ func (h *BotHandler) addUserFullName(c telebot.Context) error {
 	}
 
 	h.bot.Handle(telebot.OnText, func(ctx telebot.Context) error {
-		// validate fullname
-		if len(ctx.Text()) < 1 {
-			ctx.Send("❌ Ошибка: ФИО слишком короткое.")
+		err := validation.ValidateDescriptionStr(ctx.Text())
+		if err != nil {
+			errMsg := fmt.Sprintf("❌ Ошибка: %s\nВведите ФИО еще раз.", err)
+			return ctx.Send(errMsg)
 		}
+
 		h.bannedUser.FullName = ctx.Text()
 		return h.addUserDescription(c)
 	})
@@ -55,7 +60,7 @@ func (h *BotHandler) addUserFullName(c telebot.Context) error {
 func (h *BotHandler) addUserDescription(c telebot.Context) error {
 	markup := &telebot.ReplyMarkup{}
 	btnCancel := markup.Data("Ⓜ️ В главное меню", "main_menu")
-	btnPrev := markup.Data("Назад", "add_user_full_name")
+	btnPrev := markup.Data("⬅️ Назад", "add_user_full_name")
 	markup.Inline(markup.Row(btnCancel, btnPrev))
 	h.bannedUser.Description = ""
 
@@ -65,10 +70,12 @@ func (h *BotHandler) addUserDescription(c telebot.Context) error {
 	}
 
 	h.bot.Handle(telebot.OnText, func(ctx telebot.Context) error {
-		// validate description
-		if len(ctx.Text()) < 1 {
-			ctx.Send("❌ Ошибка: описание слишком короткое.")
+		err := validation.ValidateDescriptionStr(ctx.Text())
+		if err != nil {
+			errMsg := fmt.Sprintf("❌ Ошибка: %s\nВведите описание еще раз.", err)
+			return ctx.Send(errMsg)
 		}
+
 		h.bannedUser.Description = ctx.Text()
 		return h.addUserBirthday(c)
 	})
@@ -79,21 +86,23 @@ func (h *BotHandler) addUserDescription(c telebot.Context) error {
 func (h *BotHandler) addUserBirthday(c telebot.Context) error {
 	markup := &telebot.ReplyMarkup{}
 	btnCancel := markup.Data("Ⓜ️ В главное меню", "main_menu")
-	btnPrev := markup.Data("Назад", "add_user_description")
-	btnSkip := markup.Data("Пропустить", "add_user_city")
+	btnPrev := markup.Data("⬅️ Назад", "add_user_description")
+	btnSkip := markup.Data("➡️ Пропустить", "add_user_city")
 	markup.Inline(markup.Row(btnCancel, btnPrev, btnSkip))
 	h.bannedUser.BirthDay = ""
 
-	err := c.Send("➕ Добавление пользователя \n Шаг 4. Введите дату рождения", markup)
+	err := c.Send("➕ Добавление пользователя \n Шаг 4. Введите дату рождения в формате 01.01.2000", markup)
 	if err != nil {
 		return err
 	}
 
 	h.bot.Handle(telebot.OnText, func(ctx telebot.Context) error {
-		// validate birthday
-		if len(ctx.Text()) < 1 {
-			ctx.Send("❌ Ошибка: дата рождения слишком короткая.")
+		err := validation.ValidateBirthdayStr(ctx.Text())
+		if err != nil {
+			errMsg := fmt.Sprintf("❌ Ошибка: %s\nВведите дату рождения еще раз.", err)
+			return ctx.Send(errMsg)
 		}
+
 		h.bannedUser.BirthDay = ctx.Text()
 		return h.addUserCity(c)
 	})
@@ -104,8 +113,8 @@ func (h *BotHandler) addUserBirthday(c telebot.Context) error {
 func (h *BotHandler) addUserCity(c telebot.Context) error {
 	markup := &telebot.ReplyMarkup{}
 	btnCancel := markup.Data("Ⓜ️ В главное меню", "main_menu")
-	btnPrev := markup.Data("Назад", "add_user_birthday")
-	btnSkip := markup.Data("Пропустить", "add_user_school_format")
+	btnPrev := markup.Data("⬅️ Назад", "add_user_birthday")
+	btnSkip := markup.Data("➡️ Пропустить", "add_user_school_format")
 	markup.Inline(markup.Row(btnCancel, btnPrev, btnSkip))
 	h.bannedUser.City = ""
 
@@ -115,10 +124,12 @@ func (h *BotHandler) addUserCity(c telebot.Context) error {
 	}
 
 	h.bot.Handle(telebot.OnText, func(ctx telebot.Context) error {
-		// validate city (no need)
-		if len(ctx.Text()) < 1 {
-			ctx.Send("❌ Ошибка: название города слишком короткое.")
+		err := validation.ValidateCityStr(ctx.Text())
+		if err != nil {
+			errMsg := fmt.Sprintf("❌ Ошибка: %s\nВведите город еще раз.", err)
+			return ctx.Send(errMsg)
 		}
+
 		h.bannedUser.City = ctx.Text()
 		return h.addUserSchoolFormat(c)
 	})
@@ -128,24 +139,39 @@ func (h *BotHandler) addUserCity(c telebot.Context) error {
 
 func (h *BotHandler) addUserSchoolFormat(c telebot.Context) error {
 	markup := &telebot.ReplyMarkup{}
+	btnOfflineFormat := markup.Data("🏫 Оффлайн", "school_offline")
+	btnOnlineFormat := markup.Data("🌐 Онлайн", "school_online")
 	btnCancel := markup.Data("Ⓜ️ В главное меню", "main_menu")
-	btnPrev := markup.Data("Назад", "add_user_city")
-	btnSkip := markup.Data("Пропустить", "add_user_confirmation")
-	markup.Inline(markup.Row(btnCancel, btnPrev, btnSkip))
+	btnPrev := markup.Data("⬅️ Назад", "add_user_city")
+	btnSkip := markup.Data("➡️ Пропустить", "add_user_confirmation")
+	markup.Inline(
+		markup.Row(btnOfflineFormat, btnOnlineFormat),
+		markup.Row(btnCancel, btnPrev, btnSkip),
+	)
 	h.bannedUser.SchoolFormat = ""
 
-	err := c.Send("➕ Добавление пользователя \n Шаг 6. Введите формат школы (оффлайн/онлайн)", markup)
+	err := c.Send("➕ Добавление пользователя \n Шаг 6. Выберите формат школы (Оффлайн/Онлайн)", markup)
 	if err != nil {
 		return err
 	}
 
+	h.bot.Handle(&btnOfflineFormat, func(ctx telebot.Context) error {
+		h.bannedUser.SchoolFormat = "Оффлайн"
+		return h.addUserConfirmation(ctx)
+	})
+
+	h.bot.Handle(&btnOnlineFormat, func(ctx telebot.Context) error {
+		h.bannedUser.SchoolFormat = "Онлайн"
+		return h.addUserConfirmation(ctx)
+	})
+
 	h.bot.Handle(telebot.OnText, func(ctx telebot.Context) error {
-		// validate city (no need)
-		if len(ctx.Text()) < 1 {
-			ctx.Send("❌ Ошибка: формат школы слишком короткий.")
+		err := ctx.Send("❌ Ошибка: формат школы необходимо выбрать.")
+		if err != nil {
+			return err
 		}
-		h.bannedUser.SchoolFormat = ctx.Text()
-		return h.addUserConfirmation(c)
+
+		return h.addUserSchoolFormat(c)
 	})
 
 	return nil
@@ -158,8 +184,8 @@ func (h *BotHandler) addUserConfirmation(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel, btnConfirm))
 
 	strF := fmt.Sprintf("➕ Добавление пользователя \n"+
-		"Новый пользователь: \n"+
-		"Номер телефона: %s \n"+
+		"Проверьте информацию и подтвердите добавление. \n"+
+		"Номер телефона: +%s \n"+
 		"ФИО: %s \n"+
 		"Описание: %s \n"+
 		"Дата рождения: %s \n"+
