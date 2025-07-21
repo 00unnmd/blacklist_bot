@@ -5,6 +5,19 @@ import (
 	"strings"
 )
 
+func IsPhoneNumber(input string) bool {
+	for _, r := range input {
+		switch {
+		case r >= '0' && r <= '9', r == ' ', r == '-', r == '(', r == ')', r == '+':
+			continue
+		default:
+			return false
+		}
+	}
+
+	return true
+}
+
 func ValidateAndNormalizePhone(input string) (string, error) {
 	if !strings.HasPrefix(input, "+7") && !strings.HasPrefix(input, "7") && !strings.HasPrefix(input, "8") {
 		return "", fmt.Errorf("номер должен начинаться с +7, 7 ли или 8")

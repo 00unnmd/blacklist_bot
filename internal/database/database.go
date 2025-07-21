@@ -3,7 +3,6 @@ package database
 import (
 	"blacklist_bot/internal/models"
 	"database/sql"
-	"errors"
 	"fmt"
 	_ "github.com/lib/pq"
 	"os"
@@ -28,7 +27,7 @@ func createTables(db *sql.DB) error {
 	_, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS banned_users (
 			id SERIAL PRIMARY KEY,
-			phone_number TEXT UNIQUE NOT NULL,
+			phone_number TEXT NOT NULL,
 			full_name TEXT NOT NULL,
 			description TEXT NOT NULL,
 			birth_day TEXT,
@@ -67,23 +66,48 @@ func (d *Database) AddBannedUser(user models.BannedUser) error {
 	return err
 }
 
-func (d *Database) FindBannedUser(phoneNumber string) (*models.BannedUser, error) {
-	row := d.db.QueryRow(
-		"SELECT id, phone_number, full_name, description FROM banned_users WHERE phone_number = $1",
+func (d *Database) FindBannedUserByPhone(phoneNumber string) ([]models.BannedUser, error) {
+	rows, err := d.db.Query(
+		"SELECT id, phone_number, full_name, description, birth_day, city, school_format FROM banned_users WHERE phone_number = $1",
 		phoneNumber,
 	)
-
-	var user models.BannedUser
-	err := row.Scan(&user.ID, &user.PhoneNumber, &user.FullName, &user.Description)
 	if err != nil {
-		if errors.Is(sql.ErrNoRows, err) {
-			return nil, nil
-		}
-
 		return nil, err
 	}
+	defer rows.Close()
 
-	return &user, nil
+	var users []models.BannedUser
+	for rows.Next() {
+		var item models.BannedUser
+		if err := rows.Scan(&item.ID, &item.PhoneNumber, &item.FullName, &item.Description, &item.BirthDay, &item.City, &item.SchoolFormat); err != nil {
+			return nil, err
+		}
+		users = append(users, item)
+	}
+
+	return users, nil
+}
+
+func (d *Database) FindBannedUserByName(name string) ([]models.BannedUser, error) {
+	rows, err := d.db.Query(
+		"SELECT id, phone_number, full_name, description, birth_day, city, school_format FROM banned_users WHERE full_name ILIKE $1",
+		"%"+name+"%",
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []models.BannedUser
+	for rows.Next() {
+		var item models.BannedUser
+		if err := rows.Scan(&item.ID, &item.PhoneNumber, &item.FullName, &item.Description, &item.BirthDay, &item.City, &item.SchoolFormat); err != nil {
+			return nil, err
+		}
+		users = append(users, item)
+	}
+
+	return users, nil
 }
 
 func (d *Database) Close() error {
