@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"blacklist_bot/internal/models"
 	"blacklist_bot/utils/validation"
 	"fmt"
 	"gopkg.in/telebot.v3"
+	"strings"
 )
 
 func (h *BotHandler) addUserPhoneNumber(c telebot.Context) error {
@@ -218,7 +220,7 @@ func (h *BotHandler) findUserHandler(c telebot.Context) error {
 	btnCancel := markup.Data("Ⓜ️ В главное меню", "main_menu")
 	markup.Inline(markup.Row(btnCancel))
 
-	err := c.Send("🔍 Поиск пользователя. Введите номер телефона для поиска:", markup)
+	err := c.Send("🔍 Поиск пользователя.\nВведите номер телефона или ФИО для поиска", markup)
 	if err != nil {
 		return err
 	}
@@ -226,21 +228,49 @@ func (h *BotHandler) findUserHandler(c telebot.Context) error {
 	h.bot.Handle(telebot.OnText, func(ctx telebot.Context) error {
 		btnRepeat := markup.Data("🔍 Найти пользователя", "find_user")
 		markup.Inline(markup.Row(btnCancel, btnRepeat))
-		phoneNumber := ctx.Text()
+		input := ctx.Text()
 
-		user, err := h.db.FindBannedUser(phoneNumber)
+		isPhoneNumber := validation.IsPhoneNumber(input)
+		var users []models.BannedUser
+		var err error
+
+		if isPhoneNumber == true {
+			normalizedPhone, errV := validation.ValidateAndNormalizePhone(input)
+			if errV != nil {
+				errMsg := fmt.Sprintf("❌ Ошибка: %s\nВведите номер еще раз.", errV)
+				return ctx.Send(errMsg)
+			}
+			users, err = h.db.FindBannedUserByPhone(normalizedPhone)
+		} else {
+			users, err = h.db.FindBannedUserByName(input)
+		}
+
 		if err != nil {
 			return ctx.Send("❌ Ошибка при поиске пользователя: "+err.Error(), markup)
 		}
 
-		if user == nil {
-			return ctx.Send("❌ Пользователь с таким номером телефона не найден", markup)
+		if len(users) < 1 {
+			var searchInput string
+			if isPhoneNumber {
+				searchInput = "номером телефона"
+			} else {
+				searchInput = "ФИО"
+			}
+
+			msg := fmt.Sprintf("❌ Пользователь с таким %s не найден", searchInput)
+			return ctx.Send(msg, markup)
 		}
 
-		return ctx.Send(fmt.Sprintf(
-			"🔍 Пользователь найден! \nНомер: %s\nФИО: %s\nОписание: %s",
-			user.PhoneNumber, user.FullName, user.Description,
-		), markup)
+		var usersBuilder strings.Builder
+		for _, item := range users {
+			usersBuilder.WriteString(fmt.Sprintf(
+				"\n\nНомер: +%s\nФИО: %s\nОписание: %s\nДата рождения: %s\nГород: %s\nФормат школы: %s",
+				item.PhoneNumber, item.FullName, item.Description, item.BirthDay, item.City, item.SchoolFormat,
+			))
+		}
+		usersStr := usersBuilder.String()
+
+		return ctx.Send(fmt.Sprintf("🔍 Пользователь найден!%s", usersStr), markup)
 	})
 
 	return nil
