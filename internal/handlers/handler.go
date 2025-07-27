@@ -26,7 +26,14 @@ func New(bot *telebot.Bot, db *database.Database) *BotHandler {
 
 func (h *BotHandler) SetupHandlers() {
 	h.bot.Use(h.tracker.TrackMessages())
-	h.bot.Handle("/start", h.showMainMenu)
+	h.bot.Handle("/start", h.showStart)
+	h.bot.Handle("/about", h.showAbout)
+	h.bot.Handle("/stop", h.showStop)
+
+	h.bot.Handle(telebot.OnText, func(c telebot.Context) error {
+		startMsg := "🚀 Выберите /start чтобы открыть главное меню.\n\n🤖 Выберите /about чтобы посмотреть информацию о боте."
+		return h.SendAndTrack(c.Recipient(), c.Chat().ID, startMsg, &telebot.SendOptions{ParseMode: telebot.ModeHTML})
+	})
 
 	h.bot.Handle(telebot.OnCallback, func(c telebot.Context) error {
 		if c.Message() != nil {
@@ -59,7 +66,7 @@ func (h *BotHandler) SetupHandlers() {
 		case "add_appeal":
 			return h.addAppealHandler(c)
 		case "main_menu":
-			return h.showMainMenu(c)
+			return h.showStart(c)
 		}
 
 		return nil
@@ -75,7 +82,7 @@ func (h *BotHandler) SendAndTrack(to telebot.Recipient, chatId int64, text strin
 	return err
 }
 
-func (h *BotHandler) showMainMenu(c telebot.Context) error {
+func (h *BotHandler) showStart(c telebot.Context) error {
 	h.tracker.ClearChatHistory(h.bot, c.Chat().ID)
 
 	h.bannedUser = models.BannedUser{}
@@ -90,8 +97,31 @@ func (h *BotHandler) showMainMenu(c telebot.Context) error {
 	)
 
 	h.bot.Handle(telebot.OnText, func(ctx telebot.Context) error {
-		return h.SendAndTrack(c.Recipient(), c.Chat().ID, "Выберите пункт из меню")
+		return h.SendAndTrack(c.Recipient(), c.Chat().ID, "Ⓜ️ Выберите пункт из меню", markup)
 	})
 
 	return h.SendAndTrack(c.Recipient(), c.Chat().ID, "Ⓜ️ Главное меню", markup)
+}
+
+func (h *BotHandler) showAbout(c telebot.Context) error {
+	aboutMsg := "👋 <b>Добро пожаловать!</b>\n\n" +
+		"Этот бот позволяет работать с черным списком преподавателей.\n\n" +
+		"Основные возможности:\n" +
+		"• Добавление преподавателей в ЧС\n" +
+		"• Поиск преподавателей по базе\n" +
+		"• Возможность оставить обращение администратору\n\n" +
+		"🚀 Выберите /start чтобы открыть главное меню."
+
+	return h.SendAndTrack(c.Recipient(), c.Chat().ID, aboutMsg, &telebot.SendOptions{ParseMode: telebot.ModeHTML})
+}
+
+func (h *BotHandler) showStop(c telebot.Context) error {
+	h.tracker.ClearChatHistory(h.bot, c.Chat().ID)
+	h.bot.Handle(telebot.OnText, func(c telebot.Context) error {
+		startMsg := "🚀 Выберите /start чтобы открыть главное меню.\n\n🤖 Выберите /about чтобы посмотреть информацию о боте."
+		return h.SendAndTrack(c.Recipient(), c.Chat().ID, startMsg, &telebot.SendOptions{ParseMode: telebot.ModeHTML})
+	})
+
+	stopMsg := "🛑 Работа с ботом завершена.\n\n🚀 Чтобы начать снова, выберите /start."
+	return h.SendAndTrack(c.Recipient(), c.Chat().ID, stopMsg)
 }
