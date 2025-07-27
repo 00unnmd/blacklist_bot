@@ -12,7 +12,7 @@ func (h *BotHandler) addAppealHandler(c telebot.Context) error {
 
 	link := `<a href="https://t.me/unnmd00">администратору</a>`
 	msgStr := fmt.Sprintf("📝 Напишите текст обращения %s", link)
-	err := c.Send(msgStr, &telebot.SendOptions{ParseMode: telebot.ModeHTML, ReplyMarkup: markup})
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, msgStr, &telebot.SendOptions{ParseMode: telebot.ModeHTML, ReplyMarkup: markup})
 	if err != nil {
 		return err
 	}
