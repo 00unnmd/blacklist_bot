@@ -12,6 +12,7 @@ type BotHandler struct {
 	bot        *telebot.Bot
 	db         *database.Database
 	bannedUser models.BannedUser
+	tracker    *MessageTracker
 }
 
 func New(bot *telebot.Bot, db *database.Database) *BotHandler {
@@ -19,10 +20,12 @@ func New(bot *telebot.Bot, db *database.Database) *BotHandler {
 		bot:        bot,
 		db:         db,
 		bannedUser: models.BannedUser{},
+		tracker:    NewMessageTracker(),
 	}
 }
 
 func (h *BotHandler) SetupHandlers() {
+	h.bot.Use(h.tracker.TrackMessages())
 	h.bot.Handle("/start", h.showMainMenu)
 
 	h.bot.Handle(telebot.OnCallback, func(c telebot.Context) error {
@@ -63,7 +66,18 @@ func (h *BotHandler) SetupHandlers() {
 	})
 }
 
+// SendAndTrack added for tracking bot messages (user messages tracked with TrackMessages)
+func (h *BotHandler) SendAndTrack(to telebot.Recipient, chatId int64, text string, options ...interface{}) error {
+	msg, err := h.bot.Send(to, text, options...)
+	if err == nil {
+		h.tracker.TrackMessage(chatId, msg.ID)
+	}
+	return err
+}
+
 func (h *BotHandler) showMainMenu(c telebot.Context) error {
+	h.tracker.ClearChatHistory(h.bot, c.Chat().ID)
+
 	h.bannedUser = models.BannedUser{}
 	markup := &telebot.ReplyMarkup{}
 	btnAddUser := markup.Data("➕ Добавить пользователя", "add_user_phone_number")
@@ -76,8 +90,8 @@ func (h *BotHandler) showMainMenu(c telebot.Context) error {
 	)
 
 	h.bot.Handle(telebot.OnText, func(ctx telebot.Context) error {
-		return c.Send("Выберите пункт из меню")
+		return h.SendAndTrack(c.Recipient(), c.Chat().ID, "Выберите пункт из меню")
 	})
 
-	return c.Send("Ⓜ️ Главное меню", markup)
+	return h.SendAndTrack(c.Recipient(), c.Chat().ID, "Ⓜ️ Главное меню", markup)
 }

@@ -14,7 +14,7 @@ func (h *BotHandler) addUserPhoneNumber(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel))
 	h.bannedUser.PhoneNumber = ""
 
-	err := c.Send("➕ Добавление пользователя \n Шаг 1. Введите номер телефона", markup)
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление пользователя \n Шаг 1. Введите номер телефона", markup)
 	if err != nil {
 		return err
 	}
@@ -23,7 +23,7 @@ func (h *BotHandler) addUserPhoneNumber(c telebot.Context) error {
 		normalizedPhone, err := validation.ValidateAndNormalizePhone(ctx.Text())
 		if err != nil {
 			errMsg := fmt.Sprintf("❌ Ошибка: %s\nВведите номер еще раз.", err)
-			return ctx.Send(errMsg)
+			return h.SendAndTrack(ctx.Recipient(), ctx.Chat().ID, errMsg)
 		}
 
 		h.bannedUser.PhoneNumber = normalizedPhone
@@ -40,7 +40,7 @@ func (h *BotHandler) addUserFullName(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel, btnPrev))
 	h.bannedUser.FullName = ""
 
-	err := c.Send("➕ Добавление пользователя \n Шаг 2. Введите ФИО", markup)
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление пользователя \n Шаг 2. Введите ФИО", markup)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (h *BotHandler) addUserFullName(c telebot.Context) error {
 		err := validation.ValidateDescriptionStr(ctx.Text())
 		if err != nil {
 			errMsg := fmt.Sprintf("❌ Ошибка: %s\nВведите ФИО еще раз.", err)
-			return ctx.Send(errMsg)
+			return h.SendAndTrack(ctx.Recipient(), ctx.Chat().ID, errMsg)
 		}
 
 		h.bannedUser.FullName = ctx.Text()
@@ -66,7 +66,7 @@ func (h *BotHandler) addUserDescription(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel, btnPrev))
 	h.bannedUser.Description = ""
 
-	err := c.Send("➕ Добавление пользователя \n Шаг 3. Введите описание", markup)
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление пользователя \n Шаг 3. Введите описание", markup)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func (h *BotHandler) addUserDescription(c telebot.Context) error {
 		err := validation.ValidateDescriptionStr(ctx.Text())
 		if err != nil {
 			errMsg := fmt.Sprintf("❌ Ошибка: %s\nВведите описание еще раз.", err)
-			return ctx.Send(errMsg)
+			return h.SendAndTrack(ctx.Recipient(), ctx.Chat().ID, errMsg)
 		}
 
 		h.bannedUser.Description = ctx.Text()
@@ -93,7 +93,7 @@ func (h *BotHandler) addUserBirthday(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel, btnPrev, btnSkip))
 	h.bannedUser.BirthDay = ""
 
-	err := c.Send("➕ Добавление пользователя \n Шаг 4. Введите дату рождения в формате 01.01.2000", markup)
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление пользователя \n Шаг 4. Введите дату рождения в формате 01.01.2000", markup)
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func (h *BotHandler) addUserBirthday(c telebot.Context) error {
 		err := validation.ValidateBirthdayStr(ctx.Text())
 		if err != nil {
 			errMsg := fmt.Sprintf("❌ Ошибка: %s\nВведите дату рождения еще раз.", err)
-			return ctx.Send(errMsg)
+			return h.SendAndTrack(ctx.Recipient(), ctx.Chat().ID, errMsg)
 		}
 
 		h.bannedUser.BirthDay = ctx.Text()
@@ -120,7 +120,7 @@ func (h *BotHandler) addUserCity(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel, btnPrev, btnSkip))
 	h.bannedUser.City = ""
 
-	err := c.Send("➕ Добавление пользователя \n Шаг 5. Введите город", markup)
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление пользователя \n Шаг 5. Введите город", markup)
 	if err != nil {
 		return err
 	}
@@ -129,7 +129,7 @@ func (h *BotHandler) addUserCity(c telebot.Context) error {
 		err := validation.ValidateCityStr(ctx.Text())
 		if err != nil {
 			errMsg := fmt.Sprintf("❌ Ошибка: %s\nВведите город еще раз.", err)
-			return ctx.Send(errMsg)
+			return h.SendAndTrack(ctx.Recipient(), ctx.Chat().ID, errMsg)
 		}
 
 		h.bannedUser.City = ctx.Text()
@@ -152,7 +152,7 @@ func (h *BotHandler) addUserSchoolFormat(c telebot.Context) error {
 	)
 	h.bannedUser.SchoolFormat = ""
 
-	err := c.Send("➕ Добавление пользователя \n Шаг 6. Выберите формат школы (Оффлайн/Онлайн)", markup)
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление пользователя \n Шаг 6. Выберите формат школы (Оффлайн/Онлайн)", markup)
 	if err != nil {
 		return err
 	}
@@ -168,7 +168,7 @@ func (h *BotHandler) addUserSchoolFormat(c telebot.Context) error {
 	})
 
 	h.bot.Handle(telebot.OnText, func(ctx telebot.Context) error {
-		err := ctx.Send("❌ Ошибка: формат школы необходимо выбрать.")
+		err := h.SendAndTrack(ctx.Recipient(), ctx.Chat().ID, "❌ Ошибка: формат школы необходимо выбрать.")
 		if err != nil {
 			return err
 		}
@@ -194,7 +194,7 @@ func (h *BotHandler) addUserConfirmation(c telebot.Context) error {
 		"Город: %s \n"+
 		"Формат школы: %s \n",
 		h.bannedUser.PhoneNumber, h.bannedUser.FullName, h.bannedUser.Description, h.bannedUser.BirthDay, h.bannedUser.City, h.bannedUser.SchoolFormat)
-	err := c.Send(strF, markup)
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, strF, markup)
 	if err != nil {
 		return err
 	}
@@ -209,10 +209,10 @@ func (h *BotHandler) saveBannedUser(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel, btnRepeat))
 
 	if err := h.db.AddBannedUser(h.bannedUser); err != nil {
-		return c.Send("❌ Ошибка при добавлении пользователя: "+err.Error(), markup)
+		return h.SendAndTrack(c.Recipient(), c.Chat().ID, "❌ Ошибка при добавлении пользователя: "+err.Error(), markup)
 	}
 
-	return c.Send("✅ Пользователь успешно добавлен!", markup)
+	return h.SendAndTrack(c.Recipient(), c.Chat().ID, "✅ Пользователь успешно добавлен!", markup)
 }
 
 func (h *BotHandler) findUserHandler(c telebot.Context) error {
@@ -220,7 +220,7 @@ func (h *BotHandler) findUserHandler(c telebot.Context) error {
 	btnCancel := markup.Data("Ⓜ️ В главное меню", "main_menu")
 	markup.Inline(markup.Row(btnCancel))
 
-	err := c.Send("🔍 Поиск пользователя.\nВведите номер телефона или ФИО для поиска", markup)
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "🔍 Поиск пользователя.\nВведите номер телефона или ФИО для поиска", markup)
 	if err != nil {
 		return err
 	}
@@ -234,11 +234,11 @@ func (h *BotHandler) findUserHandler(c telebot.Context) error {
 		var users []models.BannedUser
 		var err error
 
-		if isPhoneNumber == true {
+		if isPhoneNumber {
 			normalizedPhone, errV := validation.ValidateAndNormalizePhone(input)
 			if errV != nil {
 				errMsg := fmt.Sprintf("❌ Ошибка: %s\nВведите номер еще раз.", errV)
-				return ctx.Send(errMsg)
+				return h.SendAndTrack(ctx.Recipient(), ctx.Chat().ID, errMsg)
 			}
 			users, err = h.db.FindBannedUserByPhone(normalizedPhone)
 		} else {
@@ -246,7 +246,7 @@ func (h *BotHandler) findUserHandler(c telebot.Context) error {
 		}
 
 		if err != nil {
-			return ctx.Send("❌ Ошибка при поиске пользователя: "+err.Error(), markup)
+			return h.SendAndTrack(ctx.Recipient(), ctx.Chat().ID, "❌ Ошибка при поиске пользователя: "+err.Error(), markup)
 		}
 
 		if len(users) < 1 {
@@ -258,7 +258,7 @@ func (h *BotHandler) findUserHandler(c telebot.Context) error {
 			}
 
 			msg := fmt.Sprintf("❌ Пользователь с таким %s не найден", searchInput)
-			return ctx.Send(msg, markup)
+			return h.SendAndTrack(ctx.Recipient(), ctx.Chat().ID, msg, markup)
 		}
 
 		var usersBuilder strings.Builder
@@ -270,7 +270,7 @@ func (h *BotHandler) findUserHandler(c telebot.Context) error {
 		}
 		usersStr := usersBuilder.String()
 
-		return ctx.Send(fmt.Sprintf("🔍 Пользователь найден!%s", usersStr), markup)
+		return h.SendAndTrack(ctx.Recipient(), ctx.Chat().ID, fmt.Sprintf("🔍 Пользователь найден!%s", usersStr), markup)
 	})
 
 	return nil
