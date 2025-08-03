@@ -1,4 +1,4 @@
-package handlers
+package utils
 
 import (
 	"gopkg.in/telebot.v3"
@@ -36,14 +36,23 @@ func (mt *MessageTracker) TrackMessages() telebot.MiddlewareFunc {
 	}
 }
 
+func (mt *MessageTracker) GetLastBotMessageId(chatId int64) (int, error) {
+	if messages, exist := mt.messages[chatId]; exist && len(messages) > 0 {
+		return messages[len(messages)-1], nil
+	}
+	return 0, nil
+}
+
 func (mt *MessageTracker) ClearChatHistory(bot *telebot.Bot, chatID int64) {
 	mt.mu.Lock()
 	messageIDs, exists := mt.messages[chatID]
-	if !exists {
+	if !exists || len(messageIDs) <= 1 {
+		mt.mu.Unlock()
 		return
 	}
 
-	delete(mt.messages, chatID)
+	messagesToDelete := messageIDs[:len(messageIDs)-1]
+	mt.messages[chatID] = messageIDs[len(messageIDs)-1:]
 	mt.mu.Unlock()
 
 	go func(ids []int) {
@@ -57,5 +66,5 @@ func (mt *MessageTracker) ClearChatHistory(bot *telebot.Bot, chatID int64) {
 				time.Sleep(1 * time.Second)
 			}
 		}
-	}(messageIDs)
+	}(messagesToDelete)
 }

@@ -14,7 +14,7 @@ func (h *BotHandler) addUserPhoneNumber(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel))
 	h.bannedUser.PhoneNumber = ""
 
-	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление пользователя \n Шаг 1. Введите номер телефона", markup)
+	err := h.EditBotMessage(c.Chat().ID, "➕ Добавление пользователя \n Шаг 1. Введите номер телефона", markup)
 	if err != nil {
 		return err
 	}
@@ -220,7 +220,7 @@ func (h *BotHandler) findUserHandler(c telebot.Context) error {
 	btnCancel := markup.Data("Ⓜ️ В главное меню", "main_menu")
 	markup.Inline(markup.Row(btnCancel))
 
-	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "🔍 Поиск пользователя.\nВведите номер телефона или ФИО для поиска", markup)
+	err := h.EditBotMessage(c.Chat().ID, "🔍 Поиск пользователя.\nВведите номер телефона или ФИО для поиска", markup)
 	if err != nil {
 		return err
 	}
