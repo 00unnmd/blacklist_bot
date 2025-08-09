@@ -32,7 +32,8 @@ func createTables(db *sql.DB) error {
 			description TEXT NOT NULL,
 			birth_day TEXT,
 			city TEXT,
-			school_format TEXT
+			school_format TEXT,
+		    applicant_username TEXT
 		);
 	`)
 
@@ -59,8 +60,8 @@ func New() (*Database, error) {
 
 func (d *Database) AddBannedUser(user models.BannedUser) error {
 	_, err := d.db.Exec(
-		"INSERT INTO banned_users (phone_number, full_name, description, birth_day, city, school_format) VALUES ($1, $2, $3, $4, $5, $6)",
-		user.PhoneNumber, user.FullName, user.Description, user.BirthDay, user.City, user.SchoolFormat,
+		"INSERT INTO banned_users (phone_number, full_name, description, birth_day, city, school_format, applicant_username) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+		user.PhoneNumber, user.FullName, user.Description, user.BirthDay, user.City, user.SchoolFormat, user.ApplicantUsername,
 	)
 
 	return err
