@@ -14,7 +14,7 @@ func (h *BotHandler) addUserPhoneNumber(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel))
 	h.bannedUser.PhoneNumber = ""
 
-	err := h.EditBotMessage(c.Chat().ID, "➕ Добавление пользователя \n Шаг 1. Введите номер телефона", markup)
+	err := h.EditBotMessage(c.Chat().ID, "➕ Добавление преподавателя \n Шаг 1. Введите номер телефона", markup)
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func (h *BotHandler) addUserFullName(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel, btnPrev))
 	h.bannedUser.FullName = ""
 
-	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление пользователя \n Шаг 2. Введите ФИО", markup)
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление преподавателя \n Шаг 2. Введите ФИО", markup)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (h *BotHandler) addUserDescription(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel, btnPrev))
 	h.bannedUser.Description = ""
 
-	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление пользователя \n Шаг 3. Введите описание", markup)
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление преподавателя \n Шаг 3. Введите описание", markup)
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func (h *BotHandler) addUserBirthday(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel, btnPrev, btnSkip))
 	h.bannedUser.BirthDay = ""
 
-	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление пользователя \n Шаг 4. Введите дату рождения в формате 01.01.2000", markup)
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление преподавателя \n Шаг 4. Введите дату рождения в формате 01.01.2000", markup)
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func (h *BotHandler) addUserCity(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel, btnPrev, btnSkip))
 	h.bannedUser.City = ""
 
-	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление пользователя \n Шаг 5. Введите город", markup)
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление преподавателя \n Шаг 5. Введите город", markup)
 	if err != nil {
 		return err
 	}
@@ -152,7 +152,7 @@ func (h *BotHandler) addUserSchoolFormat(c telebot.Context) error {
 	)
 	h.bannedUser.SchoolFormat = ""
 
-	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление пользователя \n Шаг 6. Выберите формат школы (Оффлайн/Онлайн)", markup)
+	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, "➕ Добавление преподавателя \n Шаг 6. Выберите формат школы (Оффлайн/Онлайн)", markup)
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func (h *BotHandler) addUserConfirmation(c telebot.Context) error {
 	btnConfirm := markup.Data("✅ Сохранить", "save_user")
 	markup.Inline(markup.Row(btnCancel, btnConfirm))
 
-	strF := fmt.Sprintf("➕ Добавление пользователя \n"+
+	strF := fmt.Sprintf("➕ Добавление преподавателя \n"+
 		"Проверьте информацию и подтвердите добавление. \n"+
 		"Номер телефона: +%s \n"+
 		"ФИО: %s \n"+
@@ -205,11 +205,11 @@ func (h *BotHandler) addUserConfirmation(c telebot.Context) error {
 func (h *BotHandler) saveBannedUser(c telebot.Context) error {
 	markup := &telebot.ReplyMarkup{}
 	btnCancel := markup.Data("Ⓜ️ В главное меню", "main_menu")
-	btnRepeat := markup.Data("➕ Добавить пользователя", "add_user_phone_number")
+	btnRepeat := markup.Data("➕ Добавить преподавателя", "add_user_phone_number")
 	markup.Inline(markup.Row(btnCancel, btnRepeat))
 
 	if err := h.db.AddBannedUser(h.bannedUser); err != nil {
-		return h.SendAndTrack(c.Recipient(), c.Chat().ID, "❌ Ошибка при добавлении пользователя: "+err.Error(), markup)
+		return h.SendAndTrack(c.Recipient(), c.Chat().ID, "❌ Ошибка при добавлении преподавателя: "+err.Error(), markup)
 	}
 
 	return h.SendAndTrack(c.Recipient(), c.Chat().ID, "✅ Пользователь успешно добавлен!", markup)
@@ -220,13 +220,13 @@ func (h *BotHandler) findUserHandler(c telebot.Context) error {
 	btnCancel := markup.Data("Ⓜ️ В главное меню", "main_menu")
 	markup.Inline(markup.Row(btnCancel))
 
-	err := h.EditBotMessage(c.Chat().ID, "🔍 Поиск пользователя.\nВведите номер телефона или ФИО для поиска", markup)
+	err := h.EditBotMessage(c.Chat().ID, "🔍 Поиск преподавателя.\nВведите номер телефона или ФИО для поиска", markup)
 	if err != nil {
 		return err
 	}
 
 	h.bot.Handle(telebot.OnText, func(ctx telebot.Context) error {
-		btnRepeat := markup.Data("🔍 Найти пользователя", "find_user")
+		btnRepeat := markup.Data("🔍 Найти преподавателя", "find_user")
 		markup.Inline(markup.Row(btnCancel, btnRepeat))
 		input := ctx.Text()
 
@@ -246,7 +246,7 @@ func (h *BotHandler) findUserHandler(c telebot.Context) error {
 		}
 
 		if err != nil {
-			return h.SendAndTrack(ctx.Recipient(), ctx.Chat().ID, "❌ Ошибка при поиске пользователя: "+err.Error(), markup)
+			return h.SendAndTrack(ctx.Recipient(), ctx.Chat().ID, "❌ Ошибка при поиске преподавателя: "+err.Error(), markup)
 		}
 
 		if len(users) < 1 {

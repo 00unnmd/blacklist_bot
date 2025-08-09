@@ -97,9 +97,9 @@ func (h *BotHandler) showStart(c telebot.Context) error {
 
 	h.bannedUser = models.BannedUser{}
 	markup := &telebot.ReplyMarkup{}
-	btnAddUser := markup.Data("➕ Добавить пользователя", "add_user_phone_number")
-	btnFindUser := markup.Data("🔍 Найти пользователя", "find_user")
-	btnAddAppeal := markup.Data("📝 Оставить обращение", "add_appeal")
+	btnAddUser := markup.Data("➕ Добавить преподавателя", "add_user_phone_number")
+	btnFindUser := markup.Data("🔍 Найти преподавателя", "find_user")
+	btnAddAppeal := markup.Data("📝 Оставить обращение администратору", "add_appeal")
 
 	markup.Inline(
 		markup.Row(btnAddUser, btnFindUser),
