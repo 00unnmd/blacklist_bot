@@ -183,6 +183,7 @@ func (h *BotHandler) addUserSchoolFormat(c telebot.Context) error {
 }
 
 func (h *BotHandler) addUserConfirmation(c telebot.Context) error {
+	h.bannedUser.ApplicantUsername = c.Sender().Username
 	markup := &telebot.ReplyMarkup{}
 	btnCancel := markup.Data("Ⓜ️ В главное меню", "main_menu")
 	btnConfirm := markup.Data("✅ Сохранить", "save_user")
@@ -195,8 +196,10 @@ func (h *BotHandler) addUserConfirmation(c telebot.Context) error {
 		"Описание: %s \n"+
 		"Дата рождения: %s \n"+
 		"Город: %s \n"+
-		"Формат школы: %s \n",
-		h.bannedUser.PhoneNumber, h.bannedUser.FullName, h.bannedUser.Description, h.bannedUser.BirthDay, h.bannedUser.City, h.bannedUser.SchoolFormat)
+		"Формат школы: %s \n"+
+		"Имя пользователя заявителя: @%s \n",
+		h.bannedUser.PhoneNumber, h.bannedUser.FullName, h.bannedUser.Description,
+		h.bannedUser.BirthDay, h.bannedUser.City, h.bannedUser.SchoolFormat, h.bannedUser.ApplicantUsername)
 	err := h.SendAndTrack(c.Recipient(), c.Chat().ID, strF, markup)
 	if err != nil {
 		return err
