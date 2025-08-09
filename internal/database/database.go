@@ -68,7 +68,7 @@ func (d *Database) AddBannedUser(user models.BannedUser) error {
 
 func (d *Database) FindBannedUserByPhone(phoneNumber string) ([]models.BannedUser, error) {
 	rows, err := d.db.Query(
-		"SELECT id, phone_number, full_name, description, birth_day, city, school_format FROM banned_users WHERE phone_number = $1",
+		"SELECT id, full_name, description, city, school_format FROM banned_users WHERE phone_number = $1",
 		phoneNumber,
 	)
 	if err != nil {
@@ -79,7 +79,7 @@ func (d *Database) FindBannedUserByPhone(phoneNumber string) ([]models.BannedUse
 	var users []models.BannedUser
 	for rows.Next() {
 		var item models.BannedUser
-		if err := rows.Scan(&item.ID, &item.PhoneNumber, &item.FullName, &item.Description, &item.BirthDay, &item.City, &item.SchoolFormat); err != nil {
+		if err := rows.Scan(&item.ID, &item.FullName, &item.Description, &item.City, &item.SchoolFormat); err != nil {
 			return nil, err
 		}
 		users = append(users, item)
@@ -90,7 +90,7 @@ func (d *Database) FindBannedUserByPhone(phoneNumber string) ([]models.BannedUse
 
 func (d *Database) FindBannedUserByName(name string) ([]models.BannedUser, error) {
 	rows, err := d.db.Query(
-		"SELECT id, phone_number, full_name, description, birth_day, city, school_format FROM banned_users WHERE full_name ILIKE $1",
+		`SELECT id, full_name, description, city, school_format FROM banned_users WHERE full_name ILIKE $1 COLLATE "pg_c_utf8";`,
 		"%"+name+"%",
 	)
 	if err != nil {
@@ -101,7 +101,7 @@ func (d *Database) FindBannedUserByName(name string) ([]models.BannedUser, error
 	var users []models.BannedUser
 	for rows.Next() {
 		var item models.BannedUser
-		if err := rows.Scan(&item.ID, &item.PhoneNumber, &item.FullName, &item.Description, &item.BirthDay, &item.City, &item.SchoolFormat); err != nil {
+		if err := rows.Scan(&item.ID, &item.FullName, &item.Description, &item.City, &item.SchoolFormat); err != nil {
 			return nil, err
 		}
 		users = append(users, item)

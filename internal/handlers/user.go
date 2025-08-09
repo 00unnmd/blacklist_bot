@@ -264,8 +264,8 @@ func (h *BotHandler) findUserHandler(c telebot.Context) error {
 		var usersBuilder strings.Builder
 		for _, item := range users {
 			usersBuilder.WriteString(fmt.Sprintf(
-				"\n\nНомер: +%s\nФИО: %s\nОписание: %s\nДата рождения: %s\nГород: %s\nФормат школы: %s",
-				item.PhoneNumber, item.FullName, item.Description, item.BirthDay, item.City, item.SchoolFormat,
+				"\n\nФИО: %s\nОписание: %s\nГород: %s\nФормат школы: %s",
+				item.FullName, item.Description, item.City, item.SchoolFormat,
 			))
 		}
 		usersStr := usersBuilder.String()
