@@ -14,7 +14,10 @@ func (h *BotHandler) addUserPhoneNumber(c telebot.Context) error {
 	markup.Inline(markup.Row(btnCancel))
 	h.bannedUser.PhoneNumber = ""
 
-	err := h.EditBotMessage(c.Chat().ID, "➕ Добавление преподавателя \n Шаг 1. Введите номер телефона", markup)
+	phone := "+7(999)999-99-99"
+	escaped := strings.Join(strings.Split(phone, ""), "\u200B")
+	msg := fmt.Sprintf("➕ Добавление преподавателя \n Шаг 1. Введите номер телефона в формате %s", escaped)
+	err := h.EditBotMessage(c.Chat().ID, msg, markup)
 	if err != nil {
 		return err
 	}
